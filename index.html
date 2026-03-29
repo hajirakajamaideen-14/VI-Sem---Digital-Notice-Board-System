@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Dashboard</title>
+</head>
+<body>
+
+<h1>Digital Notice Board</h1>
+
+<button onclick="goAdd()">Add Notice</button>
+<button onclick="goView()">View Notices</button>
+<button onclick="goSearch()">Search</button>
+<button onclick="logout()">Logout</button>
+
+<hr>
+
+<div id="notices"></div>
+
+<script>
+function goAdd() {
+  window.location.href = "add.html";
+}
+function goView() {
+  window.location.href = "view.html";
+}
+function goSearch() {
+  window.location.href = "search.html";
+}
+function logout() {
+  window.location.href = "login.html";
+}
+</script>
+
+</body>
+</html>
