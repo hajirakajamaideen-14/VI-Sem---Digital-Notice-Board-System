@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Dashboard — EduBoard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0c10; --surface: #12151c; --card: #1a1e28; --border: #252a38;
+      --accent: #e8486a; --accent2: #f5a623; --accent3: #4fc3f7;
+      --text: #e8eaf0; --muted: #8891a8; --sidebar: #0e1118;
+    }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 260px;
+      min-height: 100vh;
+      background: var(--sidebar);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 50;
+    }
+
+    .sidebar-logo {
+      padding: 28px 24px;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.3rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-logo span { color: var(--accent); }
+    .sidebar-role {
+      font-size: 0.72rem;
+      color: var(--accent);
+      background: rgba(232,72,106,0.1);
+      border-radius: 100px;
+      padding: 2px 10px;
+      display: inline-block;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    .sidebar-nav { flex: 1; padding: 20px 12px; }
+    .nav-section-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      padding: 0 12px;
+      margin-bottom: 8px;
+      margin-top: 20px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 12px;
+      border-radius: 12px;
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover { background: var(--card); color: var(--text); }
+    .nav-item.active { background: rgba(232,72,106,0.12); color: var(--accent); }
+    .nav-item .icon { font-size: 1.1rem; width: 20px; }
+
+    .sidebar-footer {
+      padding: 20px 24px;
+      border-top: 1px solid var(--border);
+    }
+    .user-info { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), #f08090);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; color: #fff;
+    }
+    .user-name { font-size: 0.9rem; font-weight: 500; }
+    .user-role { font-size: 0.75rem; color: var(--muted); }
+    .logout-btn {
+      margin-left: auto;
+      background: none; border: none;
+      color: var(--muted); font-size: 1.2rem;
+      cursor: pointer; transition: color 0.2s;
+    }
+    .logout-btn:hover { color: var(--accent); }
+
+    /* Main content */
+    .main {
+      margin-left: 260px;
+      flex: 1;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      padding: 24px 36px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .topbar h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+    }
+    .topbar-sub { color: var(--muted); font-size: 0.85rem; margin-top: 2px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { opacity: 0.9; }
+    .btn-ghost { background: var(--card); border: 1px solid var(--border); color: var(--text); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-sm { padding: 7px 14px; font-size: 0.82rem; border-radius: 8px; }
+    .btn-danger { background: rgba(232,72,106,0.12); color: var(--accent); border: 1px solid rgba(232,72,106,0.2); }
+    .btn-danger:hover { background: var(--accent); color: #fff; }
+
+    /* Content area */
+    .content { padding: 36px; }
+
+    /* Stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .stat-card .s-icon { font-size: 1.8rem; margin-bottom: 12px; }
+    .stat-card .s-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem; font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .stat-card .s-label { font-size: 0.85rem; color: var(--muted); }
+    .stat-card.red .s-num { color: var(--accent); }
+    .stat-card.gold .s-num { color: var(--accent2); }
+    .stat-card.blue .s-num { color: var(--accent3); }
+    .stat-card.green .s-num { color: #4caf8a; }
+
+    /* Notices table */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-header h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+    }
+
+    .filters {
+      display: flex; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .filter-input, .filter-select {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 14px;
+      color: var(--text); font-family: 'DM Sans', sans-serif;
+      font-size: 0.88rem; outline: none; transition: border-color 0.2s;
+    }
+    .filter-input { width: 240px; }
+    .filter-input:focus, .filter-select:focus { border-color: var(--accent); }
+
+    .notice-table {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .notice-table table { width: 100%; border-collapse: collapse; }
+    .notice-table th {
+      padding: 14px 20px;
+      text-align: left;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+    .notice-table td {
+      padding: 16px 20px;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(37,42,56,0.5);
+      vertical-align: middle;
+    }
+    .notice-table tr:last-child td { border-bottom: none; }
+    .notice-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .dept-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .dept-cse { background: rgba(79,195,247,0.12); color: var(--accent3); }
+    .dept-ece { background: rgba(245,166,35,0.12); color: var(--accent2); }
+    .dept-mech { background: rgba(76,175,138,0.12); color: #4caf8a; }
+    .dept-gen { background: rgba(200,200,200,0.1); color: var(--muted); }
+
+    .priority-dot {
+      display: inline-block;
+      width: 8px; height: 8px; border-radius: 50%;
+      margin-right: 8px;
+    }
+    .dot-high { background: var(--accent); }
+    .dot-med { background: var(--accent2); }
+    .dot-low { background: var(--accent3); }
+
+    .status-badge {
+      display: inline-block; padding: 4px 10px; border-radius: 100px; font-size: 0.78rem; font-weight: 500;
+    }
+    .status-active { background: rgba(76,175,138,0.12); color: #4caf8a; }
+    .status-exp { background: rgba(137,145,168,0.12); color: var(--muted); }
+
+    .actions { display: flex; gap: 8px; }
+
+    /* Modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: rgba(10,12,16,0.85); backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 24px; padding: 40px; width: 100%; max-width: 540px;
+      max-height: 90vh; overflow-y: auto;
+      animation: fadeUp 0.3s ease both;
+    }
+    .modal h3 {
+      font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700;
+      margin-bottom: 24px;
+    }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 12px 14px;
+      color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+      outline: none; transition: border-color 0.2s; resize: vertical;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--accent); }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 8px; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+      .sidebar { width: 60px; }
+      .sidebar .sidebar-logo, .sidebar .nav-item span, .sidebar .nav-section-label, .sidebar .user-name, .sidebar .user-role { display: none; }
+      .main { margin-left: 60px; }
+      .nav-item { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      Edu<span>Board</span><br>
+      <span class="sidebar-role">Admin</span>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Main</div>
+      <a class="nav-item active" onclick="showSection('dashboard')"><span class="icon">📊</span><span>Dashboard</span></a>
+      <a class="nav-item" onclick="showSection('notices')"><span class="icon">📋</span><span>Manage Notices</span></a>
+      <a class="nav-item" onclick="showSection('departments')"><span class="icon">🏫</span><span>Departments</span></a>
+      <div class="nav-section-label">System</div>
+      <a class="nav-item" onclick="showSection('users')"><span class="icon">👥</span><span>Users</span></a>
+      <a class="nav-item" onclick="showSection('settings')"><span class="icon">⚙️</span><span>Settings</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="avatar">A</div>
+        <div>
+          <div class="user-name">Admin User</div>
+          <div class="user-role">Super Admin</div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Logout">⏻</button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2 id="pageTitle">Admin Dashboard</h2>
+        <div class="topbar-sub" id="pageSubtitle">Overview of the notice board system</div>
+      </div>
+      <button class="btn btn-primary" onclick="openAddNotice()">+ Add Notice</button>
+    </div>
+
+    <div class="content">
+      <!-- Dashboard section -->
+      <div id="section-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card red">
+            <div class="s-icon">📋</div>
+            <div class="s-num" id="totalNotices">12</div>
+            <div class="s-label">Total Notices</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="s-icon">✅</div>
+            <div class="s-num" id="activeNotices">9</div>
+            <div class="s-label">Active Notices</div>
+          </div>
+          <div class="stat-card blue">
+            <div class="s-icon">🏫</div>
+            <div class="s-num">4</div>
+            <div class="s-label">Departments</div>
+          </div>
+          <div class="stat-card green">
+            <div class="s-icon">👥</div>
+            <div class="s-num">8</div>
+            <div class="s-label">Faculty Members</div>
+          </div>
+        </div>
+
+        <div class="section-header">
+          <h3>Recent Notices</h3>
+          <button class="btn btn-ghost btn-sm" onclick="showSection('notices')">View All</button>
+        </div>
+        <div class="notice-table" id="recentNoticesTable"></div>
+      </div>
+
+      <!-- Notices section -->
+      <div id="section-notices" style="display:none">
+        <div class="filters">
+          <input class="filter-input" type="text" id="searchInput" placeholder="🔍 Search notices..." oninput="renderTable()">
+          <select class="filter-select" id="deptFilter" onchange="renderTable()">
+            <option value="">All Departments</option>
+            <option>CSE</option><option>ECE</option><option>Mechanical</option><option>General</option>
+          </select>
+          <select class="filter-select" id="statusFilter" onchange="renderTable()">
+            <option value="">All Status</option>
+            <option>Active</option><option>Expired</option>
+          </select>
+        </div>
+        <div class="notice-table" id="allNoticesTable"></div>
+      </div>
+
+      <!-- Departments section -->
+      <div id="section-departments" style="display:none">
+        <div class="stats-grid">
+          <div class="stat-card blue"><div class="s-icon">💻</div><div class="s-num">4</div><div class="s-label">CSE Notices</div></div>
+          <div class="stat-card gold"><div class="s-icon">⚡</div><div class="s-num">2</div><div class="s-label">ECE Notices</div></div>
+          <div class="stat-card green"><div class="s-icon">⚙️</div><div class="s-num">1</div><div class="s-label">Mech Notices</div></div>
+          <div class="stat-card red"><div class="s-icon">📢</div><div class="s-num">5</div><div class="s-label">General Notices</div></div>
+        </div>
+        <p style="color:var(--muted); text-align:center; padding:40px">Department management — assign faculty, set notice limits, and configure settings per department.</p>
+      </div>
+
+      <!-- Users section -->
+      <div id="section-users" style="display:none">
+        <p style="color:var(--muted); text-align:center; padding:80px">User management panel — add, edit or remove admin and faculty accounts. Role-based access control.</p>
+      </div>
+
+      <!-- Settings section -->
+      <div id="section-settings" style="display:none">
+        <p style="color:var(--muted); text-align:center; padding:80px">System settings — configure notice categories, expiry policies, and notification preferences.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Add/Edit Notice Modal -->
+  <div class="modal-overlay" id="noticeModal">
+    <div class="modal">
+      <h3 id="modalTitle">Add New Notice</h3>
+      <div class="form-group">
+        <label>Notice Title *</label>
+        <input type="text" id="noticeTitle" placeholder="Enter notice title">
+      </div>
+      <div class="form-group">
+        <label>Content *</label>
+        <textarea id="noticeContent" rows="4" placeholder="Describe the notice in detail..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Department *</label>
+          <select id="noticeDept">
+            <option>General</option><option>CSE</option><option>ECE</option><option>Mechanical</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="noticeCat">
+            <option>Academic</option><option>Event</option><option>Exam</option><option>Holiday</option><option>Urgent</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Priority</label>
+          <select id="noticePriority">
+            <option>High</option><option>Medium</option><option>Low</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Expiry Date *</label>
+          <input type="date" id="noticeExpiry">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNotice()">Save Notice</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let editIndex = null;
+
+    let notices = [
+      { id:1, title:'Semester Exam Schedule 2025', dept:'CSE', category:'Exam', priority:'High', status:'Active', expiry:'2025-12-30', content:'The semester exams will begin on Dec 1st. Check the timetable on the notice board.' },
+      { id:2, title:'Annual Sports Day Registration', dept:'General', category:'Event', priority:'Medium', status:'Active', expiry:'2025-11-15', content:'Register for annual sports day events. Last date for registration is Nov 10th.' },
+      { id:3, title:'Lab Assignment Submission', dept:'CSE', category:'Academic', priority:'High', status:'Active', expiry:'2025-10-25', content:'Submit your OS lab assignments to the lab instructor before the deadline.' },
+      { id:4, title:'Circuit Design Workshop', dept:'ECE', category:'Event', priority:'Medium', status:'Active', expiry:'2025-11-05', content:'Workshop on circuit design using simulation tools on Nov 5th in ECE lab.' },
+      { id:5, title:'College Foundation Day', dept:'General', category:'Event', priority:'Low', status:'Active', expiry:'2025-12-01', content:'College foundation day celebration on Nov 25th. All students must attend.' },
+      { id:6, title:'Mechanical CAD Training', dept:'Mechanical', category:'Academic', priority:'Medium', status:'Expired', expiry:'2025-09-30', content:'Training on SolidWorks CAD software. Registration closed.' },
+      { id:7, title:'Placement Drive — TCS', dept:'General', category:'Urgent', priority:'High', status:'Active', expiry:'2025-11-20', content:'TCS placement drive on Nov 18th. Final year students must register by Nov 15th.' },
+    ];
+
+    function renderTableHTML(data) {
+      if (!data.length) return '<p style="text-align:center;padding:40px;color:var(--muted)">No notices found.</p>';
+      const deptClass = { CSE:'dept-cse', ECE:'dept-ece', Mechanical:'dept-mech', General:'dept-gen' };
+      const dotClass = { High:'dot-high', Medium:'dot-med', Low:'dot-low' };
+      return `<table>
+        <thead><tr>
+          <th>Title</th><th>Department</th><th>Category</th><th>Priority</th><th>Expiry</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          ${data.map((n, i) => `<tr>
+            <td style="font-weight:500;max-width:220px">${n.title}</td>
+            <td><span class="dept-tag ${deptClass[n.dept]||'dept-gen'}">${n.dept}</span></td>
+            <td style="color:var(--muted)">${n.category}</td>
+            <td><span class="priority-dot ${dotClass[n.priority]}"></span>${n.priority}</td>
+            <td style="color:var(--muted)">${n.expiry}</td>
+            <td><span class="status-badge ${n.status==='Active'?'status-active':'status-exp'}">${n.status}</span></td>
+            <td><div class="actions">
+              <button class="btn btn-ghost btn-sm" onclick="editNotice(${notices.indexOf(n)})">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="deleteNotice(${notices.indexOf(n)})">🗑️</button>
+            </div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+
+    function renderTable() {
+      const search = document.getElementById('searchInput')?.value.toLowerCase() || '';
+      const dept = document.getElementById('deptFilter')?.value || '';
+      const status = document.getElementById('statusFilter')?.value || '';
+      const filtered = notices.filter(n =>
+        (!search || n.title.toLowerCase().includes(search) || n.dept.toLowerCase().includes(search)) &&
+        (!dept || n.dept === dept) &&
+        (!status || n.status === status)
+      );
+      const el = document.getElementById('allNoticesTable');
+      if (el) el.innerHTML = renderTableHTML(filtered);
+    }
+
+    function renderRecent() {
+      const el = document.getElementById('recentNoticesTable');
+      if (el) el.innerHTML = renderTableHTML(notices.slice(0, 5));
+      document.getElementById('totalNotices').textContent = notices.length;
+      document.getElementById('activeNotices').textContent = notices.filter(n => n.status === 'Active').length;
+    }
+
+    function showSection(name) {
+      ['dashboard','notices','departments','users','settings'].forEach(s => {
+        document.getElementById('section-' + s).style.display = s === name ? '' : 'none';
+      });
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+      const titles = { dashboard:'Admin Dashboard', notices:'Manage Notices', departments:'Departments', users:'User Management', settings:'Settings' };
+      const subs = { dashboard:'Overview of the notice board system', notices:'Add, edit, or delete notices', departments:'Manage department configurations', users:'Manage admin and faculty accounts', settings:'System configuration' };
+      document.getElementById('pageTitle').textContent = titles[name];
+      document.getElementById('pageSubtitle').textContent = subs[name];
+      if (name === 'notices') renderTable();
+    }
+
+    function openAddNotice() {
+      editIndex = null;
+      document.getElementById('modalTitle').textContent = 'Add New Notice';
+      document.getElementById('noticeTitle').value = '';
+      document.getElementById('noticeContent').value = '';
+      document.getElementById('noticeExpiry').value = '';
+      document.getElementById('noticeModal').classList.add('show');
+    }
+
+    function editNotice(i) {
+      editIndex = i;
+      const n = notices[i];
+      document.getElementById('modalTitle').textContent = 'Edit Notice';
+      document.getElementById('noticeTitle').value = n.title;
+      document.getElementById('noticeContent').value = n.content;
+      document.getElementById('noticeDept').value = n.dept;
+      document.getElementById('noticeCat').value = n.category;
+      document.getElementById('noticePriority').value = n.priority;
+      document.getElementById('noticeExpiry').value = n.expiry;
+      document.getElementById('noticeModal').classList.add('show');
+    }
+
+    function deleteNotice(i) {
+      if (confirm('Delete this notice?')) {
+        notices.splice(i, 1);
+        renderTable();
+        renderRecent();
+      }
+    }
+
+    function saveNotice() {
+      const title = document.getElementById('noticeTitle').value.trim();
+      if (!title) { alert('Title is required'); return; }
+      const notice = {
+        id: Date.now(),
+        title,
+        content: document.getElementById('noticeContent').value,
+        dept: document.getElementById('noticeDept').value,
+        category: document.getElementById('noticeCat').value,
+        priority: document.getElementById('noticePriority').value,
+        expiry: document.getElementById('noticeExpiry').value,
+        status: 'Active'
+      };
+      if (editIndex !== null) { notices[editIndex] = notice; }
+      else { notices.unshift(notice); }
+      closeModal();
+      renderTable();
+      renderRecent();
+    }
+
+    function closeModal() { document.getElementById('noticeModal').classList.remove('show'); }
+
+    function logout() {
+      sessionStorage.clear();
+      window.location.href = '../index.html';
+    }
+
+    document.getElementById('noticeModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    renderRecent();
+  </script>
+</body>
+</html>
